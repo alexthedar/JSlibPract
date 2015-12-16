@@ -1,7 +1,8 @@
 //anonymous function that executes automatically
 ( //wrap anonymous function in parathesis so that you do not have to assign it to a variable and con
   //scope = the browser window or what is passed into the library
-  function(scope){
+  //isForgiving = adds the possibility of overiding the error in order to load more than once
+  function(scope, isForgiving){
 
     //version of application
     var version = 1.0001;
@@ -19,15 +20,24 @@
       return version;
     };
 
-    //checks if the library exists and if not creates it.
+    //checks if the library exists and if not creates it and does version control.
     if(!window.gQ){
       window.gQ = gQ;
     } else {
+      //asks if can allow duplicate instances and checks to make sure that gQ is not a user defined variable
+      if(isForgiving && window,gQ.version){
+        //checks if the duplicate library version is larger than the current library version
+        //if it is larger than sets window.gQ by itself else sets window.gQ as the new larger version gQ
+        window.gQ = window.gQ.version()>version ? window.gQ : gQ;
+      } else {
       //make sure it is only instantiated once or if variable already defined
-
+      //throw error if loaded more than once
+        throw new Error("The variable window.gQ already exists.")
+      }
     }
   //the browser window that is passed into the library or whatever the user passes in.
-  }(window)
+  //allows forgiveness
+}(window, true)
 
 );
 /*
