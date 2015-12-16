@@ -11,11 +11,11 @@
     //creates global document variable via window passed in
     var doc = window.document;
 
-    //stories the query language we are working with
+    //stores the query language we are working with
     var q;
 
     var gQ = function (selector, context){
-
+      return q(selector);
     };
 
 
@@ -43,7 +43,7 @@
 
     };
 
-    gQ.ready = function((fun){
+    gQ.ready = function(fun){
 
     	var last = window.onload;
 
@@ -67,6 +67,9 @@
     	}
     }
 
+    //makes sure the document is loaded
+    gQ.start = function(){};
+
     //returns the version numebr to outside the function without letting people access the version variable
     gQ.version = function(){
       return version;
@@ -81,14 +84,14 @@
   			return document.querySelectorAll(parm);
 
   		};
-  		onReadySelect();
+      gQ.start();
 
   	}else{
   		loadScript('js/sizzle.min.js', function(){
   			//makes q = sizzle
   			q = Sizzle;
 
-  			onReadySelect();
+        gQ.start();
   		});
   	}
   });
