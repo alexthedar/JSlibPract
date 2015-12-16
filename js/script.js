@@ -1,4 +1,4 @@
-console.log(gQ.version);
+console.log(gQ.version());
 
 //create global variable q for queryselctor
 var q;
@@ -63,23 +63,4 @@ function addOnReady(fun){
 		if(isReady) fun();
 	}
 
-}
-
-//loads a script to the head tag dynamically
-function loadScript(path, callback){
-	var js = document.createElement('script');
-			js.src = path;
-			js.type = 'text/javascript';
-			js.onload = function(){
-				callback();
-				this.onload = this.onreadystatechange = null;
-			};
-
-			js.onreadystatechange = function(){
-				if(this.readState == 'complete'){
-					this.onload();
-				}
-			}
-
-			document.getElementsByTagName('head')[0].appendChild(js);
 }

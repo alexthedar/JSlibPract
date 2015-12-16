@@ -7,39 +7,120 @@
     //version of application
     var version = 1.0001;
 
+
+    //creates global document variable via window passed in
+    var doc = window.document;
+
+    //stories the query language we are working with
+    var q;
+
     var gQ = function (selector, context){
 
     };
 
-    gQ.loadJS = function(){
+
+    //loads a script to the head tag dynamically
+    gQ.loadJS = function(path, callback){
+
+    	var js = doc.createElement('script');
+
+    			js.src = path;
+
+    			js.type = 'text/javascript';
+
+    			js.onload = function(){
+    				callback();
+    				this.onload = this.onreadystatechange = null;
+    			};
+
+    			js.onreadystatechange = function(){
+    				if(this.readState == 'complete'){
+    					this.onload();
+    				}
+    			}
+
+    			doc.getElementsByTagName('head')[0].appendChild(js);
 
     };
+
+    gQ.ready = function((fun){
+
+    	var last = window.onload;
+
+    	var isReady= false;
+
+    	if(doc.addEventListener){
+    		doc.addEventListener('DOMContentLoaded',function(){
+
+    			console.log("DOM is loaded");
+
+    			isReady = true;
+
+    			fun();
+    		});
+    	}
+
+    	window.onload = function(){
+    		if(last) { last() };
+
+    		if(isReady){ fun() };
+    	}
+    }
 
     //returns the version numebr to outside the function without letting people access the version variable
     gQ.version = function(){
       return version;
     };
 
+  gQ.ready(function(){
+
+  //allows you to use querySelector or Sizzle to grab DOM elements
+  	if(doc.querySelectorAll && doc.querySelectorAll('body:first-of-type')){
+  		q = function(parm) {
+  			//returns a function similar to our query
+  			return document.querySelectorAll(parm);
+
+  		};
+  		onReadySelect();
+
+  	}else{
+  		loadScript('js/sizzle.min.js', function(){
+  			//makes q = sizzle
+  			q = Sizzle;
+
+  			onReadySelect();
+  		});
+  	}
+  });
+
     //checks if the library exists and if not creates it and does version control.
     if(!window.gQ){
       window.gQ = gQ;
+
     } else {
       //asks if can allow duplicate instances and checks to make sure that gQ is not a user defined variable
       if(isForgiving && window,gQ.version){
         //checks if the duplicate library version is larger than the current library version
         //if it is larger than sets window.gQ by itself else sets window.gQ as the new larger version gQ
         window.gQ = window.gQ.version()>version ? window.gQ : gQ;
+
       } else {
       //make sure it is only instantiated once or if variable already defined
       //throw error if loaded more than once
-        throw new Error("The variable window.gQ already exists.")
+        throw new Error("The variable window.gQ already exists.");
+
       }
-    }
+    };
+
+
   //the browser window that is passed into the library or whatever the user passes in.
-  //allows forgiveness
-}(window, true)
+  //true allows forgiveness
+  }(window, true)
 
 );
+
+
+//extra code beneath this line ------------------------ ignore
 /*
 //namespaces
 //com.domainName.libraryName
