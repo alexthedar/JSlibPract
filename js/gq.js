@@ -65,7 +65,25 @@
 
     		if(isReady){ fun() };
     	}
-    }
+    };
+
+    //return as array in order to return similar across all adapters
+    gQ.toArray = function(item){
+      //grab length
+  		var len = item.length;
+  		var out = [];
+      //if len is greater than 0 then iterate and create array in item order
+  		if(len>0){
+  			for(var i=0; i<len; i++)
+  				out[i] = item[i];
+  		}else{
+        //else return item 0
+  			out[0] = item;
+  		}
+      //return array
+  		return out;
+  	};
+
 
     //makes sure the document is loaded
     gQ.start = function(){};
@@ -78,13 +96,15 @@
     //allows you to use querySelector or Sizzle or jquery to grab DOM elements
   gQ.ready(function(){
     //check for jquery in scope
-    if('jQuery' in scope){
+    if(false && 'jQuery' in scope){
       //create new jquery adapter pasing jquery in
-      q = new JQueryAdapter(scope.jQuery);
+      //context is document
+      q = new JQueryAdapter(scope.jQuery, doc);
       gQ.start();
-    } else if(doc.querySelectorAll && doc.querySelectorAll('body:first-of-type')){
+    } else if(false && doc.querySelectorAll && doc.querySelectorAll('body:first-of-type')){
       //create new natuve adapter for neweer browsers
-  		q = new NativeQuery();
+      //send in document
+  		q = new NativeQuery(doc);
       gQ.start();
   	}else{
   		gQ.loadJS('js/sizzle.min.js', function(){
@@ -101,21 +121,37 @@
   //translates an objhects properties and methods to another.  allow programming elements to work together
   //
   //constructor function to create a native solution
-  NativeQuery = function(){};
+  //context is html element
+  NativeQuery = function(context){this.context=context;};
 
   //method to replace the doc.queryselectall
   NativeQuery.prototype.query = function(selector, context){
 
-    //if not context use document
-    context = context || doc;
+    //the context being sent currently or the context saved previously
+    context = context || this.context;
+    //self referential returns object with html element
+    return new NativeQuery(gQ.toArray(context.querySelectorAll(selector)));
+  };
 
-    //returns a function similar to our query
-    return context.querySelectorAll(selector);
+  NativeQuery.prototype.text = function (value){
+    //choosing innertext or text content to protect against firefox by testing first item
+    innerText = (this.context[0].innerText===undefined) ? 'textContent':'innerText';
+    //update element
+    for(var item in this.context){
+      //loop through and set values for each item
+      this.context[item][innerText]=value;
+    }
+    //return changed items
+    return value;
+  };
 
-  }
 
   //sizzle adapter - create sizzle library
-  SizzleAdapter = function(lib){this.lib=lib;};
+  SizzleAdapter = function(lib, context){
+    this.lib=lib;
+    //html element
+    this.context=context;
+  };
 
   //define every public method in the library
   SizzleAdapter.prototype.query = function(selector,context){
@@ -124,13 +160,32 @@
     context = context || doc;
 
     //returns a function similar to our query
-    return this.lib(selector, context);
+    return new SizzleAdapter(this.lib, gQ.toArray(this.lib(selector, context)));
+  };
 
-  }
+  SizzleAdapter.prototype.text = function (value){
+    //choosing innertext or text content to protect against firefox by testing first item
+    innerText = (this.context[0].innerText===undefined) ? 'textContent':'innerText';
+    //update element
+    for(var item in this.context){
+      //loop through and set values for each item
+      this.context[item][innerText]=value;
+    }
+    //return changed items
+    return value;
+  };
+
 
   //using sizzle adapter design to create jquery adapter
   //jquery adapter - create jquey library
-  JQueryAdapter = function(lib){this.lib=lib;};
+  JQueryAdapter = function(lib, context){
+    //jquery library
+    this.lib=lib;
+    //html element
+    this.context=context;
+    //target for the library with the context already configured
+    this.target = lib(context);
+  };
 
   //define every public method in the library
   JQueryAdapter.prototype.query = function(selector,context){
@@ -139,9 +194,16 @@
     context = context || doc;
 
     //returns the dom element inside an array
-    return this.lib(selector, context).get();
+    //create new jquery adapter with jquery library and context as the dom element returned as an array
+    //refers to itself
+    return new JQueryAdapter(this.lib,this.lib(selector, context).get());
 
-  }
+  };
+
+  //
+  JQueryAdapter.prototype.text = function (value){
+    return this.target.text(value);
+  };
 
     //checks if the library exists and if not creates it and does version control.
     if(!scope.gQ){
