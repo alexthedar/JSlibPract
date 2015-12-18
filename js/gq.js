@@ -82,15 +82,16 @@
   		q = new NativeQuery();
 
   	}else{
-  		loadScript('js/sizzle.min.js', function(){
+  		gQ.loadJS('js/sizzle.min.js', function(){
   			//makes q = sizzle
-  			q = Sizzle;
+  			q = new SizzleAdapter(Sizzle);
 
         gQ.start();
   		});
   	}
   });
 
+  //simple adapters for native and sizzle
   //constructor function to create a native solution
   NativeQuery = function(){};
 
@@ -102,6 +103,20 @@
 
     //returns a function similar to our query
     return context.querySelectorAll(selector);
+
+  }
+
+  //sizzle adapter - create sizzle library
+  SizzleAdapter = function(lib){this.lib=lib;};
+
+  //define every public method in the library
+  SizzleAdapter.prototype.query = function(selector,context){
+
+    //if not context use document
+    context = context || doc;
+
+    //returns a function similar to our query
+    return this.lib(selector, context);
 
   }
 
