@@ -9,7 +9,7 @@
 
 
     //creates global document variable via window passed in
-    var doc = window.document;
+    var doc = scope.document;
 
     //stores the query language we are working with
     var q;
@@ -75,14 +75,20 @@
       return version;
     };
 
+    //allows you to use querySelector or Sizzle or jquery to grab DOM elements
   gQ.ready(function(){
-
-  //allows you to use querySelector or Sizzle to grab DOM elements
-  	if(doc.querySelectorAll && doc.querySelectorAll('body:first-of-type')){
+    //check for jquery in scope
+    if('jQuery' in scope){
+      //create new jquery adapter pasing jquery in
+      q = new JQueryAdapter(scope.jQuery);
+      gQ.start();
+    } else if(doc.querySelectorAll && doc.querySelectorAll('body:first-of-type')){
+      //create new natuve adapter for neweer browsers
   		q = new NativeQuery();
-
+      gQ.start();
   	}else{
   		gQ.loadJS('js/sizzle.min.js', function(){
+        //create new sizzle adapter in case of older browser
   			//makes q = sizzle
   			q = new SizzleAdapter(Sizzle);
 
@@ -92,6 +98,8 @@
   });
 
   //simple adapters for native and sizzle
+  //translates an objhects properties and methods to another.  allow programming elements to work together
+  //
   //constructor function to create a native solution
   NativeQuery = function(){};
 
@@ -120,16 +128,31 @@
 
   }
 
+  //using sizzle adapter design to create jquery adapter
+  //jquery adapter - create jquey library
+  JQueryAdapter = function(lib){this.lib=lib;};
+
+  //define every public method in the library
+  JQueryAdapter.prototype.query = function(selector,context){
+
+    //if not context use document
+    context = context || doc;
+
+    //returns the dom element inside an array
+    return this.lib(selector, context).get();
+
+  }
+
     //checks if the library exists and if not creates it and does version control.
-    if(!window.gQ){
-      window.gQ = gQ;
+    if(!scope.gQ){
+      scope.gQ = gQ;
 
     } else {
       //asks if can allow duplicate instances and checks to make sure that gQ is not a user defined variable
-      if(isForgiving && window,gQ.version){
+      if(isForgiving && scope,gQ.version){
         //checks if the duplicate library version is larger than the current library version
         //if it is larger than sets window.gQ by itself else sets window.gQ as the new larger version gQ
-        window.gQ = window.gQ.version()>version ? window.gQ : gQ;
+        scope.gQ = scope.gQ.version()>version ? scope.gQ : gQ;
 
       } else {
       //make sure it is only instantiated once or if variable already defined
@@ -142,7 +165,7 @@
 
   //the browser window that is passed into the library or whatever the user passes in.
   //true allows forgiveness
-  }(window, true)
+}(window, true)
 
 );
 
