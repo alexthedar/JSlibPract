@@ -15,7 +15,7 @@
     var q;
 
     var gQ = function (selector, context){
-      return q(selector);
+      return q.query(selector,context);
     };
 
 
@@ -79,12 +79,7 @@
 
   //allows you to use querySelector or Sizzle to grab DOM elements
   	if(doc.querySelectorAll && doc.querySelectorAll('body:first-of-type')){
-  		q = function(parm) {
-  			//returns a function similar to our query
-  			return document.querySelectorAll(parm);
-
-  		};
-      gQ.start();
+  		q = new NativeQuery();
 
   	}else{
   		loadScript('js/sizzle.min.js', function(){
@@ -95,6 +90,20 @@
   		});
   	}
   });
+
+  //constructor function to create a native solution
+  NativeQuery = function(){};
+
+  //method to replace the doc.queryselectall
+  NativeQuery.prototype.query = function(selector, context){
+
+    //if not context use document
+    context = context || doc;
+
+    //returns a function similar to our query
+    return context.querySelectorAll(selector);
+
+  }
 
     //checks if the library exists and if not creates it and does version control.
     if(!window.gQ){
