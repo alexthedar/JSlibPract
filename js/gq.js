@@ -117,6 +117,24 @@
   	}
   });
 
+  //global facade object.  Pass in adapter
+  QueryFacade = function(adapter){
+    this.adapater = adapter;
+  };
+
+  //mimicking the query functions of the adapters
+  QueryFacade.prototype.query = function(selector, context){
+    //return the value returned from the adapter when sending in same information sent in function constructor
+    // wrap in new query facade to insure the returned value is a query facade
+    return new QueryFacade(this.adapter.query(selector, context));
+  };
+
+  //mimicking the text function of the adapters
+  NativeQuery.prototype.text = function (value){
+    //returning string 
+    return this.adapter.text(value);
+  };
+
   //simple adapters for native and sizzle
   //translates an objhects properties and methods to another.  allow programming elements to work together
   //
