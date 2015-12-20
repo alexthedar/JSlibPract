@@ -230,32 +230,3 @@
 }(window, true)
 
 );
-
-
-//extra code beneath this line ------------------------ ignore
-/*
-//namespaces
-//com.domainName.libraryName
-
-//does com exist else create empty objetc - this acts like a folder
-var com = com || {};
-    // does com have object inside else create it (o2Geek is the object)
-    com.o2GEEK = com.o2GEEK || {};
-*/
-/*
-can use if(com.o2GEEK.gQ) {
-                              com.o2GEEK.gQ = function (selector, context){}
-                              com.o2GEEK.gQ,loadJS = function(){}
-                            }
-this asks if library exists and stops from 2 instations of the library
-*/
-/*
-//this protects your code form others code overwriting it
-com.o2GEEK.gQ = function (selector, context){
-
-}
-
-com.o2GEEK.gQ,loadJS = function(){
-
-}
-*/
