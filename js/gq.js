@@ -15,7 +15,7 @@
     var q;
 
     var gQ = function (selector, context){
-      console.log(q, q.query);
+        console.log(q, q.query);
 
       return q.query(selector,context);
     };
