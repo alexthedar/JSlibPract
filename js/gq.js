@@ -99,18 +99,21 @@
     if(false && 'jQuery' in scope){
       //create new jquery adapter pasing jquery in
       //context is document
-      q = new JQueryAdapter(scope.jQuery, doc);
+      //create adapter through queryfacade creat by sending in jquery adapter, jquery lib, and the document)
+      q = QueryFacade.create(JQueryAdapter,scope.jQuery, doc);
       gQ.start();
     } else if(false && doc.querySelectorAll && doc.querySelectorAll('body:first-of-type')){
       //create new natuve adapter for neweer browsers
       //send in document
-  		q = new NativeQuery(doc);
+      //use query facade create to make adapter by sending in adapter, null and document
+  		q = QueryFacade.create(NativeQuery, null, doc);
       gQ.start();
   	}else{
   		gQ.loadJS('js/sizzle.min.js', function(){
         //create new sizzle adapter in case of older browser
   			//makes q = sizzle
-  			q = new SizzleAdapter(Sizzle);
+        //use query facade to create adapter using adapter sizle lib and doc.
+  			q = QueryFacade.create(SizzleAdapter, Sizzle, doc);
 
         gQ.start();
   		});
@@ -130,9 +133,16 @@
   };
 
   //mimicking the text function of the adapters
-  NativeQuery.prototype.text = function (value){
-    //returning string 
+  QueryFacade.prototype.text = function (value){
+    //returning string
     return this.adapter.text(value);
+  };
+
+  //method to eliminate the hardcoding of initial construction that assigns jquery native and sizzle
+  //insures queryfacade is used from the start
+  QueryFacade.create = function(adapter, lib, context){
+    //create any new adapter by passing making new adapter.  only possible because all queries have same design.
+    return new QueryFacade(new adapter(lib, context));
   };
 
   //simple adapters for native and sizzle
@@ -140,7 +150,10 @@
   //
   //constructor function to create a native solution
   //context is html element
-  NativeQuery = function(context){this.context=context;};
+  NativeQuery = function(lib, context){
+    this.lib=lib;
+    this.context=context;
+  };
 
   //method to replace the doc.queryselectall
   NativeQuery.prototype.query = function(selector, context){
