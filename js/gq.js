@@ -258,10 +258,32 @@
     var instance;
     //this is the creation of an instance method and will hold all the methods that will be exposed
     function create(){
-      function add(interval, times, callback, name){};
-      //properties
-      //methods
+      //static index variable to help with name and counting
+      var index = 0,
+          //how often does the interval run
+          sensitivity = 100,
+          //create a dictionary of methods
+          methods = {};
 
+      //public methods
+      function add(interval, times, callback, name){
+        //local variable that stores that gives the interval based on the sensitivity
+        var realInterval = interval - interval%sensitivity;
+        name = name || (++index);
+        //what if name already exists?
+        //check if realInterval exists in methods dictionary and then define realinterbal
+        If(methods[realInterval]) {methods[realInterval] = {};};
+          //reference object to contain info passed in
+          methods[realInterval][name] = {times: times,
+                                    callback: callback,
+                                    //added in case we make it so user can change sensitivity and to keep a reference to original entry
+                                    interval: interval};
+          start();
+      };
+      //private methods
+      function start(){
+
+      };
       // this is the methods that will be return and expposed to the user
       return {add:add};
     }
