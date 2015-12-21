@@ -248,24 +248,54 @@
     return this.target.text(value);
   };
 
-    //checks if the library exists and if not creates it and does version control.
-    if(!scope.gQ){
-      scope.gQ = gQ;
+  //creation of a javascript timer without allowing any memory leaks
+  //anonymous self instatiating function
+  //only be able to create one instance of this
+  //working with singleton design wihtin javascript
+  //singletons can make hard to maintain and manage code
+  var Ticker = (function(){
+    //this stores the instance of the ticker function
+    var instance;
+    //this is the creation of an instance method and will hold all the methods that will be exposed
+    function create(){
+      function add(interval, times, callback, name){};
+      //properties
+      //methods
+
+      // this is the methods that will be return and expposed to the user
+      return {add:add};
+    }
+
+    //ticker returns getinstance which, if no instance exist will create and instance or return the one already created
+    return {getInstance:function(){
+      //if no instance then create one
+      if(!instance){instance = create();};
+      //return instance created
+      return instance;
+    }}
+  }());
+
+    //this is when ticker is called
+    Ticker.getInstance();
+
+  //checks if the library exists and if not creates it and does version control.
+  if(!scope.gQ){
+    scope.gQ = gQ;
+
+  } else {
+    //asks if can allow duplicate instances and checks to make sure that gQ is not a user defined variable
+    if(isForgiving && scope,gQ.version){
+      //checks if the duplicate library version is larger than the current library version
+      //if it is larger than sets window.gQ by itself else sets window.gQ as the new larger version gQ
+      scope.gQ = scope.gQ.version()>version ? scope.gQ : gQ;
 
     } else {
-      //asks if can allow duplicate instances and checks to make sure that gQ is not a user defined variable
-      if(isForgiving && scope,gQ.version){
-        //checks if the duplicate library version is larger than the current library version
-        //if it is larger than sets window.gQ by itself else sets window.gQ as the new larger version gQ
-        scope.gQ = scope.gQ.version()>version ? scope.gQ : gQ;
+    //make sure it is only instantiated once or if variable already defined
+    //throw error if loaded more than once
+      throw new Error("The variable window.gQ already exists.");
 
-      } else {
-      //make sure it is only instantiated once or if variable already defined
-      //throw error if loaded more than once
-        throw new Error("The variable window.gQ already exists.");
-
-      }
-    };
+    }
+  };
 
 
   //the browser window that is passed into the library or whatever the user passes in.
