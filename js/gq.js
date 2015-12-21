@@ -259,7 +259,12 @@
     //this is the creation of an instance method and will hold all the methods that will be exposed
     function create(){
       //static index variable to help with name and counting
-      var index = 0,
+          //create an id for each interval
+      var intervalID,
+          //how much time has passed since last interval
+          currentInterval=0,
+          maxInterval=0,
+          index = 0,
           //how often does the interval run
           sensitivity = 100,
           //create a dictionary of methods
@@ -269,6 +274,9 @@
       function add(interval, times, callback, name){
         //local variable that stores that gives the interval based on the sensitivity
         var realInterval = interval - interval%sensitivity;
+        //what is the largest interval that can exist
+        maxInterval = Math.max(realInterval, maxInterval);
+
         name = name || (++index);
         //what if name already exists?
         //check if realInterval exists in methods dictionary and then define realinterbal
@@ -282,7 +290,27 @@
       };
       //private methods
       function start(){
+        //if intervalID does not exist set setintervalID into it.
+        //setinterval uses runInterval function and sensitivity
+        if(intervalID){
+          intervalID = setInterval(runInterval, sensitivity);
+        }
+      };
 
+      function runInterval(){
+        //get rid of any number larger than the max amount
+        currentInterval = currentInterval%maxInterval;
+        //increase current interval by the sensitivity value creating refernec to where we ar in time
+        currentInterval += sensitivity;
+
+        //test all intervals in methods object based on current time to see which need to run
+        for(var interval in methods){
+          //if there is no remainder when you take current time and divide it by the interval time then it means this is the time to call element
+          if(currentInterval%interval==0){
+            //function to process all the intervals within the methods object
+            processIntervalGroup(methods[interval]);
+          }
+        }
       };
       // this is the methods that will be return and expposed to the user
       return {add:add};
