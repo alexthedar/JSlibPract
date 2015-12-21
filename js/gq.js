@@ -15,6 +15,8 @@
     var q;
 
     var gQ = function (selector, context){
+      console.log(q, q.query);
+
       return q.query(selector,context);
     };
 
@@ -52,7 +54,7 @@
     	if(doc.addEventListener){
     		doc.addEventListener('DOMContentLoaded',function(){
 
-    			console.log("DOM is loaded");
+    			// console.log("DOM is loaded");
 
     			isReady = true;
 
@@ -96,13 +98,13 @@
     //allows you to use querySelector or Sizzle or jquery to grab DOM elements
   gQ.ready(function(){
     //check for jquery in scope
-    if(false && 'jQuery' in scope){
+    if('jQuery' in scope){
       //create new jquery adapter pasing jquery in
       //context is document
       //create adapter through queryfacade creat by sending in jquery adapter, jquery lib, and the document)
       q = QueryFacade.create(JQueryAdapter,scope.jQuery, doc);
       gQ.start();
-    } else if(false && doc.querySelectorAll && doc.querySelectorAll('body:first-of-type')){
+    } else if(doc.querySelectorAll && doc.querySelectorAll('body:first-of-type')){
       //create new natuve adapter for neweer browsers
       //send in document
       //use query facade create to make adapter by sending in adapter, null and document
@@ -122,27 +124,37 @@
 
   //global facade object.  Pass in adapter
   QueryFacade = function(adapter){
-    this.adapater = adapter;
-  };
+    //create methods inside of function to make adapters inaccesible to the outside
+    //this allows the methods acces to th eadpater but the user has no access to the adapters
 
-  //mimicking the query functions of the adapters
-  QueryFacade.prototype.query = function(selector, context){
-    //return the value returned from the adapter when sending in same information sent in function constructor
-    // wrap in new query facade to insure the returned value is a query facade
-    return new QueryFacade(this.adapter.query(selector, context));
-  };
+    //expose the dom element
+    var dom = function(){
+      //returns the context of any adapter
+      return adapter.context;
+    },
 
-  //mimicking the text function of the adapters
-  QueryFacade.prototype.text = function (value){
-    //returning string
-    return this.adapter.text(value);
+      //mimicking the query functions of the adapters
+      query = function(selector, context){
+        //return the value returned from the adapter when sending in same information sent in function constructor
+        // wrap in new query facade to insure the returned value is a query facade
+        return QueryFacade(adapter.query(selector, context));
+      },
+
+      //mimicking the text function of the adapters
+        text = function (value){
+        //returning string
+        return adapter.text(value);
+        };
+
+    //what is being returned and exposed to user - these are the methods i am exposing
+    return {dom: dom, query: query, text:text};
   };
 
   //method to eliminate the hardcoding of initial construction that assigns jquery native and sizzle
   //insures queryfacade is used from the start
   QueryFacade.create = function(adapter, lib, context){
     //create any new adapter by passing making new adapter.  only possible because all queries have same design.
-    return new QueryFacade(new adapter(lib, context));
+    return QueryFacade(new adapter(lib, context));
   };
 
   //simple adapters for native and sizzle
