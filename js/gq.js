@@ -95,6 +95,11 @@
       return version;
     };
 
+    //exposing ticker to user through gQ
+    gQ.ticker = function(){
+      return Ticker.getInstance();
+    };
+
     //allows you to use querySelector or Sizzle or jquery to grab DOM elements
   gQ.ready(function(){
     //check for jquery in scope
@@ -279,8 +284,10 @@
 
         name = name || (++index);
         //what if name already exists?
-        //check if realInterval exists in methods dictionary and then define realinterbal
-        If(methods[realInterval]) {methods[realInterval] = {};};
+        //check if realInterval exists in methods dictionary and if not define it
+        if(!methods[realInterval]){
+                                  methods[realInterval] = {};
+                                }
           //reference object to contain info passed in
           methods[realInterval][name] = {times: times,
                                     callback: callback,
@@ -292,7 +299,7 @@
       function start(){
         //if intervalID does not exist set setintervalID into it.
         //setinterval uses runInterval function and sensitivity
-        if(intervalID){
+        if(!intervalID){
           intervalID = setInterval(runInterval, sensitivity);
         }
       };
@@ -312,6 +319,31 @@
           }
         }
       };
+
+      //pass in group of methods to run
+      function processIntervalGroup(group){
+        //local variable to hold group[name]
+        var item;
+        //loop through each element in the group
+        for(var name in group){
+          item = group[name];
+
+          //run callback
+          item.callback();
+
+          //check how many times this needs to be run
+          //if the times = 0 then remove from the group
+          if(item.times==0){
+            delete group[name];
+
+          //else we reduce the number of times this needs to be run.
+          }else{
+            --item.times;
+          }
+
+        }
+      };
+
       // this is the methods that will be return and expposed to the user
       return {add:add};
     }
@@ -325,8 +357,6 @@
     }}
   }());
 
-    //this is when ticker is called
-    Ticker.getInstance();
 
   //checks if the library exists and if not creates it and does version control.
   if(!scope.gQ){
