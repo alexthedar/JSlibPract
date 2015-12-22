@@ -385,8 +385,12 @@
       if(list[type].indexOf(listener) == -1){
         //if listener does not exist then push the item into element
         list[type].push(listener);
+        //return added for testing
+        return true;
       }
-    }
+      //false added for testing
+      return false;
+    };
 
     //function to remove events
     o.removeEvent = function(type, listener){
@@ -401,10 +405,13 @@
         //if index is greater than -1 then take the index out of the array
         if(index>-1){
           lt.splice(index, 1);
+          // return added for testing
+          return true;
         }
       }
+      //false added for testing
+      return false;
     };
-
 
     //enables you to broadcast that the event has just happened
     //send in event object
@@ -424,6 +431,30 @@
       };
     }
   };
+
+//a down and dirty unit test for the add and remove event functions
+  var o = {};
+  var f= function(){};
+  EventDispatcher(o);
+  var a = [{test:o.removeEvent('car',f),
+          value:false,
+          msg:'remove event not working as expected'},
+
+        {test:o.addEvent('car',f),
+          value:true,
+          msg:'add event not working as expected'}];
+
+    for(var item in a){
+      if(a[item].test!=a[item].value)
+        console.log('....', a[item].msg);
+    }
+
+    /*
+    console.log(o.removeEvent('car',f), false);
+    console.log(o.addEvent('car',f), true);
+    console.log(o.addEvent('car',f), false);
+    console.log(o.removeEvent('car',f), true);*/
+
 
 
   //checks if the library exists and if not creates it and does version control.
