@@ -273,7 +273,9 @@
           //how often does the interval run
           sensitivity = 100,
           //create a dictionary of methods
-          methods = {};
+          methods = {},
+          //api object that holds what is returned from ticker
+          api;
 
       //public methods
       function add(interval, times, callback, name){
@@ -305,6 +307,9 @@
       };
 
       function runInterval(){
+
+        api.dispatchEvent({type:'pretick',target:api});
+
         //get rid of any number larger than the max amount
         currentInterval = currentInterval%maxInterval;
         //increase current interval by the sensitivity value creating refernec to where we ar in time
@@ -318,6 +323,8 @@
             processIntervalGroup(methods[interval]);
           }
         }
+        api.dispatchEvent({type:'tick', target: api});
+
       };
 
       //pass in group of methods to run
@@ -340,12 +347,17 @@
           }else{
             --item.times;
           }
-
         }
       };
 
+
+      //api object that holds what is returned from ticker
+      api = {add:add};
+      //wrap returned object in an event dispatcher
+      EventDispatcher(api);
+
       // this is the methods that will be return and expposed to the user
-      return {add:add};
+      return api;
     }
 
     //ticker returns getinstance which, if no instance exist will create and instance or return the one already created
@@ -376,6 +388,23 @@
       }
     }
 
+    //function to remove events
+    o.removeEvent = function(type, listener){
+      //shortcut for name
+      var lt = list[type],
+          index;
+
+      //if type exists then find index of it in the list array
+      if(lt){
+        index = lt.indexOf(listener);
+
+        //if index is greater than -1 then take the index out of the array
+        if(index>-1){
+          lt.splice(index, 1);
+        }
+      }
+    };
+
 
     //enables you to broadcast that the event has just happened
     //send in event object
@@ -396,15 +425,6 @@
     }
   };
 
-  var o = {info:'hello'};
-  EventDispatcher(o);
-
-  o.addEvent('tick', function(e){
-    console.log('a tick just happened', e.target, e.type);
-    console.log("----",this == o, o.info);
-  });
-
-  o.dispatchEvent({type:'tick', target: o})
 
   //checks if the library exists and if not creates it and does version control.
   if(!scope.gQ){
