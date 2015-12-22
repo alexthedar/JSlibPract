@@ -357,6 +357,54 @@
     }}
   }());
 
+  //a function that will accept an object
+  function EventDispatcher(o){
+    //private variable that stores all the different events
+    var list = {};
+    //
+    //funtion that take in the type and a listener[or function] (similar to call back except can accept list)
+    //type is string the user sends in  like a click, tick
+    o.addEvent = function(type, listener){
+      //does type exist in the list object, if not then create array type in list object
+      if(!list[type]){
+        list[type] = [];
+      }
+      //check to see if listener already exists, if the listener does not exist then it will return -1
+      if(list[type].indexOf(listener) == -1){
+        //if listener does not exist then push the item into element
+        list[type].push(listener);
+      }
+    }
+
+
+    //enables you to broadcast that the event has just happened
+    //send in event object
+    o.dispatchEvent = function(e){
+      //check to see if we have thet e.type which is th etype that has been run
+      var a = list[e.type];
+      //if the array is returned with a value
+      if(a){
+        //if no target exists then set target as object that is dispatch the event
+        if(!e.target) {
+          e.target = this;
+        };
+        //now loop through all the items and exceute the function
+        for(var index in a){
+          a[index].call(e.target, e);
+        };
+      };
+    }
+  };
+
+  var o = {info:'hello'};
+  EventDispatcher(o);
+
+  o.addEvent('tick', function(e){
+    console.log('a tick just happened', e.target, e.type);
+    console.log("----",this == o, o.info);
+  });
+
+  o.dispatchEvent({type:'tick', target: o})
 
   //checks if the library exists and if not creates it and does version control.
   if(!scope.gQ){
